@@ -6,8 +6,17 @@ using UnityEngine;
 public class Noise
 {
     // o perlin noise varia, mas valores inteiros sempre terão a mesma "tonalidade"
-    public static float[,] GenerateNoiseMap(int mapWidth, int mapHeight, float scale, int octaves, float persistence, float lacunarity){
+    public static float[,] GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistence, float lacunarity, Vector2 offset){
         float[,] noiseMap = new float[mapWidth,mapHeight];
+
+        System.Random prng = new System.Random(seed);
+        Vector2[] octaveOffsets = new Vector2[octaves]; // Definindo offsets para as camadas de octaves
+        for (int i = 0; i < octaves; i++)
+        {
+            float offsetX = prng.Next(-100000, 100000) + offset.x; // O vector2 offset é um offset manual, além do aleatorio
+            float offsetY = prng.Next(-100000, 100000) + offset.x;
+            octaveOffsets[i] = new Vector2(offsetX, offsetY);
+        }
 
         if (scale <= 0)
         {
@@ -26,8 +35,8 @@ public class Noise
                 float noiseHeight = 0;
                 for (int i = 0; i < octaves; i++)
                 {
-                    float sampleX = x / scale * frequency;
-                    float sampleY = y / scale * frequency;
+                    float sampleX = x / scale * frequency + octaveOffsets[i].x;
+                    float sampleY = y / scale * frequency + octaveOffsets[i].y;
 
                     float perlinValue = Mathf.PerlinNoise (sampleX, sampleY) * 2 - 1; // O *2-1 faz com que o range da operação seja entre -1 e 1
                     noiseHeight += perlinValue * amplitude;

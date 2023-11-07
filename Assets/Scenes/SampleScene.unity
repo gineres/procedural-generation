@@ -432,8 +432,10 @@ MonoBehaviour:
   noiseScale: 4.63
   octaves: 15
   persistence: 1.16
-  lacunarity: 2.06
+  lacunarity: 0.73
   autoUpdate: 1
+  seed: 0
+  offset: {x: 14.17, y: 0}
 --- !u!4 &1497272930
 Transform:
   m_ObjectHideFlags: 0
