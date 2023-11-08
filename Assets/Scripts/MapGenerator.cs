@@ -8,7 +8,7 @@ public class MapGenerator : MonoBehaviour
     
     public DrawMode drawMode;
 
-    const int mapChunkSize = 241;
+    const int mapChunkSize = 241; // As dimensoes da mesh de verdade eh 240 x 240, ou seja, -1
     [Range(0,6)]
     public int levelOfDetail;
 
