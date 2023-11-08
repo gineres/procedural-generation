@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class EndlessTerrain : MonoBehaviour
 {
-    const float maxViewDistance = 300;
+    const float maxViewDistance = 450;
     public Transform viewer;
 
     public static Vector2 viewerPosition;
@@ -12,7 +12,8 @@ public class EndlessTerrain : MonoBehaviour
     int chunkVisibleInViewDistance;
 
     Dictionary<Vector2, TerrainChunk> terrainChunkDictionary = new Dictionary<Vector2, TerrainChunk>(); // Dicionario para armazenar as posições vistas (para assim prevenir o caso de instanciar mais de uma vez)
-
+    List<TerrainChunk> terrainChunkVisibleLastUpdate = new List<TerrainChunk>();
+    
     void Start()
     {
         chunkSize = MapGenerator.mapChunkSize - 1; // -1 porque o numero la tinha 1 a mais
@@ -26,6 +27,12 @@ public class EndlessTerrain : MonoBehaviour
     }
 
     void UpdateVisibleChunks(){
+        for (int i = 0; i < terrainChunkVisibleLastUpdate.Count; i++)
+        {
+            terrainChunkVisibleLastUpdate[i].SetVisible(false);
+        }
+        terrainChunkVisibleLastUpdate.Clear();
+
         int currentChunkCoordX = Mathf.RoundToInt(viewerPosition.x / chunkSize); // O valor das coordenadas após essa divisão se tornam (0,0) (1,0) (2,0) (-1,1) ... (enquanto das dimensões reais seriam (0,0) (240,0) (480,0) ...)
         int currentChunkCoordY = Mathf.RoundToInt(viewerPosition.y / chunkSize);
 
@@ -36,9 +43,13 @@ public class EndlessTerrain : MonoBehaviour
                 Vector2 viewedChunkCoord = new Vector2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
                 if (terrainChunkDictionary.ContainsKey (viewedChunkCoord)){
                     terrainChunkDictionary[viewedChunkCoord].UpdateTerrainChunk();
+                    if (terrainChunkDictionary[viewedChunkCoord].IsVisible())
+                    {
+                        terrainChunkVisibleLastUpdate.Add(terrainChunkDictionary[viewedChunkCoord]);
+                    }
                 } else
                 {
-                    terrainChunkDictionary.Add(viewedChunkCoord, new TerrainChunk(viewedChunkCoord, chunkSize));
+                    terrainChunkDictionary.Add(viewedChunkCoord, new TerrainChunk(viewedChunkCoord, chunkSize, transform));
                 }
             }
         }
@@ -49,7 +60,7 @@ public class EndlessTerrain : MonoBehaviour
         Vector2 position;
         Bounds bounds;
 
-        public TerrainChunk(Vector2 coord, int size){
+        public TerrainChunk(Vector2 coord, int size, Transform parent){
             position = coord*size;
             bounds = new Bounds(position, Vector2.one * size);
             Vector3 positionV3 = new Vector3(position.x, 0, position.y); // Posicao para o plano
@@ -57,6 +68,7 @@ public class EndlessTerrain : MonoBehaviour
             meshObject = GameObject.CreatePrimitive(PrimitiveType.Plane);
             meshObject.transform.position = positionV3;
             meshObject.transform.localScale = Vector3.one * size / 10f; // Divisao por 10 porque planes tem o plane tem 10m
+            meshObject.transform.parent = parent;
             SetVisible(false);
         }
 
@@ -68,6 +80,10 @@ public class EndlessTerrain : MonoBehaviour
 
         public void SetVisible(bool visible){
             meshObject.SetActive(visible);
+        }
+
+        public bool IsVisible(){
+            return meshObject.activeSelf;
         }
     }
 }
