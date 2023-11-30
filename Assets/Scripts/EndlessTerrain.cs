@@ -13,11 +13,14 @@ public class EndlessTerrain : MonoBehaviour
 
     Dictionary<Vector2, TerrainChunk> terrainChunkDictionary = new Dictionary<Vector2, TerrainChunk>(); // Dicionario para armazenar as posições vistas (para assim prevenir o caso de instanciar mais de uma vez)
     List<TerrainChunk> terrainChunkVisibleLastUpdate = new List<TerrainChunk>();
+
+    static MapGenerator mapGenerator;
     
     void Start()
     {
         chunkSize = MapGenerator.mapChunkSize - 1; // -1 porque o numero la tinha 1 a mais
         chunkVisibleInViewDistance = Mathf.RoundToInt(maxViewDistance/chunkSize);
+        mapGenerator = FindObjectOfType<MapGenerator> ();
     }
 
     void Update()
@@ -70,6 +73,12 @@ public class EndlessTerrain : MonoBehaviour
             meshObject.transform.localScale = Vector3.one * size / 10f; // Divisao por 10 porque planes tem o plane tem 10m
             meshObject.transform.parent = parent;
             SetVisible(false);
+
+            mapGenerator.RequestMapData(OnMapDataReceived);
+        }
+
+        void OnMapDataReceived(MapData mapData){
+            print("Map data received");
         }
 
         public void UpdateTerrainChunk(){
