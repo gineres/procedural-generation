@@ -4,7 +4,12 @@ using UnityEngine;
 
 public static class MeshGenerator
 {
-    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve heightCurve, int levelOfDetail){
+    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve _heightCurve, int levelOfDetail){
+        AnimationCurve heightCurve = new AnimationCurve(_heightCurve.keys);  // Criando um objeto próprio para cada thread ter sua própria animation curve
+        // DO JEITO QUE TAVA ANTES, THREADS DIFERENTES ACESSAVAM A MESMA HEIGHTCURVE E CRIAVA RESULTADOS MALUCOS
+        // UMA DAS SOLUÇÕES ERA DAR UM "LOCK" NA _HEIGHCURVE, POREM ISSO NÃO É OPTIMAL VISTO QUE CADA THREAD TERIA Q ESPERAR A OUTRA ACABAR PARA CONTINUAR O TRABALHO
+        // (EXEMPLO DE LOCK COMENTADO)
+
         int width = heightMap.GetLength(0);
         int height = heightMap.GetLength(1);
         float topLeftX = (width - 1)/-2f;
@@ -20,6 +25,10 @@ public static class MeshGenerator
         {
             for (int x = 0; x < width; x+=meshSimplificationIncrement)
             {
+                /*lock (_heightCurve)
+                {
+                    meshData.vertices[vertexIndex] = new Vector3(topLeftX + x, _heightCurve.Evaluate(heightMap[x,y]) * heightMultiplier, topLeftZ - y);
+                }*/
                 meshData.vertices[vertexIndex] = new Vector3(topLeftX + x, heightCurve.Evaluate(heightMap[x,y]) * heightMultiplier, topLeftZ - y);
                 meshData.uvs[vertexIndex] = new Vector2(x/(float)width, y/(float)height);
 
