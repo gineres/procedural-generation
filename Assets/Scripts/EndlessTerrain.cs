@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class EndlessTerrain : MonoBehaviour
 {
+    const float viewerMoveThresholdForChunkUpdate = 25f;
+    const float squareViewerMoveThresholdForChunkUpdate = viewerMoveThresholdForChunkUpdate*viewerMoveThresholdForChunkUpdate;
+
+
     public static float maxViewDistance; // static para poder mudar valores em runtime(?)
     public LODInfo[] detailLevels;
 
@@ -11,6 +15,8 @@ public class EndlessTerrain : MonoBehaviour
     public Material mapMaterial;
 
     public static Vector2 viewerPosition;
+    Vector2 viewerPositionOld;
+
     int chunkSize;
     int chunkVisibleInViewDistance;
 
@@ -25,12 +31,21 @@ public class EndlessTerrain : MonoBehaviour
         chunkSize = MapGenerator.mapChunkSize - 1; // -1 porque o numero la tinha 1 a mais
         chunkVisibleInViewDistance = Mathf.RoundToInt(maxViewDistance/chunkSize);
         mapGenerator = FindObjectOfType<MapGenerator> ();
+
+        UpdateVisibleChunks();
     }
 
     void Update()
     {
         viewerPosition = new Vector2(viewer.position.x, viewer.position.z);
-        UpdateVisibleChunks();
+
+        // Apenas atualiza os chunks se o jogador andar por uma certa distancia
+        if ((viewerPositionOld - viewerPosition).sqrMagnitude > squareViewerMoveThresholdForChunkUpdate) // sqrMagnitude = square distance
+        {
+            UpdateVisibleChunks();
+            viewerPositionOld = viewerPosition;
+        }
+        
     }
 
     void UpdateVisibleChunks(){
@@ -95,7 +110,7 @@ public class EndlessTerrain : MonoBehaviour
             lODMeshes = new LODMesh[detailLevels.Length];
             for (int i = 0; i < detailLevels.Length; i++)
             {
-                lODMeshes[i] = new LODMesh(detailLevels[i].lod);
+                lODMeshes[i] = new LODMesh(detailLevels[i].lod, UpdateTerrainChunk);
             }
 
             mapGenerator.RequestMapData(OnMapDataReceived);
@@ -104,6 +119,8 @@ public class EndlessTerrain : MonoBehaviour
         void OnMapDataReceived(MapData mapData){
             this.mapData = mapData;
             mapDataReceived = true;
+
+            UpdateTerrainChunk();
             //print("Map data received");
             //mapGenerator.RequestMeshData(mapData, OnMeshDataReceived);
         }
@@ -165,14 +182,18 @@ public class EndlessTerrain : MonoBehaviour
         public bool hasRequestedMesh;
         public bool hasMesh;
         int lod;
+        System.Action updateCallback;
 
-        public LODMesh(int lod){
+        public LODMesh(int lod, System.Action updateCallback){
             this.lod = lod;
+            this.updateCallback = updateCallback;
         }
 
         void OnMeshDataReceived(MeshData meshData){
             mesh = meshData.CreateMesh();
             hasMesh = true;
+
+            updateCallback(); // Vai chamar a funcao UpdateTerrainChunk assim que conseguir o mesh data!!!
         }
 
         public void RequestMesh(MapData mapData){
