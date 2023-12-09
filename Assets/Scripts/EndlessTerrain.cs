@@ -29,7 +29,8 @@ public class EndlessTerrain : MonoBehaviour
     {
         maxViewDistance = detailLevels[detailLevels.Length-1].visibleDistanceThreshold;
         chunkSize = MapGenerator.mapChunkSize - 1; // -1 porque o numero la tinha 1 a mais
-        chunkVisibleInViewDistance = Mathf.RoundToInt(maxViewDistance/chunkSize);
+        //chunkVisibleInViewDistance = Mathf.RoundToInt(maxViewDistance/chunkSize);
+        chunkVisibleInViewDistance = 1;
         mapGenerator = FindObjectOfType<MapGenerator> ();
 
         UpdateVisibleChunks();
@@ -49,6 +50,7 @@ public class EndlessTerrain : MonoBehaviour
     }
 
     void UpdateVisibleChunks(){
+
         for (int i = 0; i < terrainChunkVisibleLastUpdate.Count; i++)
         {
             terrainChunkVisibleLastUpdate[i].SetVisible(false);
@@ -58,9 +60,9 @@ public class EndlessTerrain : MonoBehaviour
         int currentChunkCoordX = Mathf.RoundToInt(viewerPosition.x / chunkSize); // O valor das coordenadas após essa divisão se tornam (0,0) (1,0) (2,0) (-1,1) ... (enquanto das dimensões reais seriam (0,0) (240,0) (480,0) ...)
         int currentChunkCoordY = Mathf.RoundToInt(viewerPosition.y / chunkSize);
 
-        for (int yOffset = -chunkVisibleInViewDistance; yOffset < chunkVisibleInViewDistance; yOffset++)
+        for (int yOffset = -chunkVisibleInViewDistance; yOffset <= chunkVisibleInViewDistance; yOffset++)
         {
-            for (int xOffset = -chunkVisibleInViewDistance; xOffset < chunkVisibleInViewDistance; xOffset++) // loopando ao redor do ponto
+            for (int xOffset = -chunkVisibleInViewDistance; xOffset <= chunkVisibleInViewDistance; xOffset++) // loopando ao redor do ponto
             {
                 Vector2 viewedChunkCoord = new Vector2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
                 if (terrainChunkDictionary.ContainsKey (viewedChunkCoord)){
