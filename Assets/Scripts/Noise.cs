@@ -14,7 +14,7 @@ public class Noise
         for (int i = 0; i < octaves; i++)
         {
             float offsetX = prng.Next(-100000, 100000) + offset.x; // O vector2 offset é um offset manual, além do aleatorio
-            float offsetY = prng.Next(-100000, 100000) + offset.x;
+            float offsetY = prng.Next(-100000, 100000) - offset.y;
             octaveOffsets[i] = new Vector2(offsetX, offsetY);
         }
 
@@ -38,8 +38,8 @@ public class Noise
                 float noiseHeight = 0;
                 for (int i = 0; i < octaves; i++)
                 {
-                    float sampleX = (x - halfWidth) / scale * frequency + octaveOffsets[i].x;
-                    float sampleY = (y - halfHeight) / scale * frequency + octaveOffsets[i].y;
+                    float sampleX = (x - halfWidth + octaveOffsets[i].x) / scale * frequency;
+                    float sampleY = (y - halfHeight + octaveOffsets[i].y) / scale * frequency;
 
                     float perlinValue = Mathf.PerlinNoise (sampleX, sampleY) * 2 - 1; // O *2-1 faz com que o range da operação seja entre -1 e 1
                     noiseHeight += perlinValue * amplitude;

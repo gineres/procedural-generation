@@ -21,13 +21,13 @@ public class EndlessTerrain : MonoBehaviour
     int chunkVisibleInViewDistance;
 
     Dictionary<Vector2, TerrainChunk> terrainChunkDictionary = new Dictionary<Vector2, TerrainChunk>(); // Dicionario para armazenar as posições vistas (para assim prevenir o caso de instanciar mais de uma vez)
-    List<TerrainChunk> terrainChunkVisibleLastUpdate = new List<TerrainChunk>();
+    static List<TerrainChunk> terrainChunkVisibleLastUpdate = new List<TerrainChunk>();
 
     static MapGenerator mapGenerator;
     
     void Start()
     {
-        maxViewDistance = detailLevels[detailLevels.Length-1].visibleDistanceThreshold; // (6:35)
+        maxViewDistance = detailLevels[detailLevels.Length-1].visibleDistanceThreshold;
         chunkSize = MapGenerator.mapChunkSize - 1; // -1 porque o numero la tinha 1 a mais
         chunkVisibleInViewDistance = Mathf.RoundToInt(maxViewDistance/chunkSize);
         mapGenerator = FindObjectOfType<MapGenerator> ();
@@ -65,10 +65,10 @@ public class EndlessTerrain : MonoBehaviour
                 Vector2 viewedChunkCoord = new Vector2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
                 if (terrainChunkDictionary.ContainsKey (viewedChunkCoord)){
                     terrainChunkDictionary[viewedChunkCoord].UpdateTerrainChunk();
-                    if (terrainChunkDictionary[viewedChunkCoord].IsVisible())
+                    /*if (terrainChunkDictionary[viewedChunkCoord].IsVisible())
                     {
                         terrainChunkVisibleLastUpdate.Add(terrainChunkDictionary[viewedChunkCoord]);
-                    }
+                    }*/
                 } else
                 {
                     terrainChunkDictionary.Add(viewedChunkCoord, new TerrainChunk(viewedChunkCoord, chunkSize, detailLevels, transform, mapMaterial));
@@ -113,12 +113,15 @@ public class EndlessTerrain : MonoBehaviour
                 lODMeshes[i] = new LODMesh(detailLevels[i].lod, UpdateTerrainChunk);
             }
 
-            mapGenerator.RequestMapData(OnMapDataReceived);
+            mapGenerator.RequestMapData(position, OnMapDataReceived);
         }
 
         void OnMapDataReceived(MapData mapData){
             this.mapData = mapData;
             mapDataReceived = true;
+
+            Texture2D texture = TextureGenerator.TextureFromColorMap(mapData.colorMap, MapGenerator.mapChunkSize, MapGenerator.mapChunkSize);
+            meshRenderer.material.mainTexture = texture;
 
             UpdateTerrainChunk();
             //print("Map data received");
@@ -162,6 +165,8 @@ public class EndlessTerrain : MonoBehaviour
                             lodMesh.RequestMesh(mapData);
                         }
                     }
+
+                    terrainChunkVisibleLastUpdate.Add(this);
                 }
 
                 SetVisible(visible);

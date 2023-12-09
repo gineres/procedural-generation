@@ -32,16 +32,16 @@ public class MapGenerator : MonoBehaviour
     Queue<MapThreadInfo<MapData>> mapDataThreadInfoQueue = new Queue<MapThreadInfo<MapData>>();
     Queue<MapThreadInfo<MeshData>> meshDataThreadInfoQueue = new Queue<MapThreadInfo<MeshData>>();
 
-    public void RequestMapData(Action<MapData> callback){
+    public void RequestMapData(Vector2 center, Action<MapData> callback){
         ThreadStart threadStart = delegate {
-            MapDataThread(callback);
+            MapDataThread(center, callback);
         };
 
         new Thread(threadStart).Start(); // Com isso, o metodo abaixo MapDataThread está rodando em outra thread
     }
 
-    void MapDataThread(Action<MapData> callback){
-        MapData mapData = GenerateMapData(); // Com isso, agora o GenerateMapData também rodará dentro dessa thread
+    void MapDataThread(Vector2 center, Action<MapData> callback){
+        MapData mapData = GenerateMapData(center); // Com isso, agora o GenerateMapData também rodará dentro dessa thread
         lock (mapDataThreadInfoQueue){ // Prendendo para evitar o acesso de outros lugares
             mapDataThreadInfoQueue.Enqueue( new MapThreadInfo<MapData> (callback, mapData) );
         }
@@ -84,7 +84,7 @@ public class MapGenerator : MonoBehaviour
     }
 
     public void DrawMapInEditor(){
-        MapData mapData = GenerateMapData();
+        MapData mapData = GenerateMapData(Vector2.zero);
 
         MapDisplay display = FindObjectOfType<MapDisplay> ();
 
@@ -100,8 +100,8 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    MapData GenerateMapData(){
-        float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize,mapChunkSize,seed,noiseScale, octaves, persistence, lacunarity,offset);
+    MapData GenerateMapData(Vector2 center){
+        float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize,mapChunkSize,seed,noiseScale, octaves, persistence, lacunarity, center + offset);
 
         Color[] colorMap = new Color[mapChunkSize*mapChunkSize];
         for (int y = 0; y < mapChunkSize; y++)
