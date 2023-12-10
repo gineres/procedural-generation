@@ -117,7 +117,8 @@ public class MapGenerator : MonoBehaviour
                     if (currentHeight >= regions[i].height)
                     {
                         colorMap[y * mapChunkSize + x] = regions[i].color;
-                    } else
+                    } 
+                    else
                     {
                         break;
                     }
