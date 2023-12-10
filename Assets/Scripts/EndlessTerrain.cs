@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class EndlessTerrain : MonoBehaviour
 {
+    const float scale = .5f;
     const float viewerMoveThresholdForChunkUpdate = 25f;
     const float squareViewerMoveThresholdForChunkUpdate = viewerMoveThresholdForChunkUpdate*viewerMoveThresholdForChunkUpdate;
 
@@ -38,7 +39,7 @@ public class EndlessTerrain : MonoBehaviour
 
     void Update()
     {
-        viewerPosition = new Vector2(viewer.position.x, viewer.position.z);
+        viewerPosition = new Vector2(viewer.position.x, viewer.position.z) / scale;
 
         // Apenas atualiza os chunks se o jogador andar por uma certa distancia
         if ((viewerPositionOld - viewerPosition).sqrMagnitude > squareViewerMoveThresholdForChunkUpdate) // sqrMagnitude = square distance
@@ -104,9 +105,10 @@ public class EndlessTerrain : MonoBehaviour
             meshFilter = meshObject.AddComponent<MeshFilter>();
             meshRenderer.material = material;
 
-            meshObject.transform.position = positionV3;
+            meshObject.transform.position = positionV3 * scale;
             //meshObject.transform.localScale = Vector3.one * size / 10f; // Divisao por 10 porque planes tem o plane tem 10m
             meshObject.transform.parent = parent;
+            meshObject.transform.localScale = scale * Vector3.one;
             SetVisible(false);
 
             lODMeshes = new LODMesh[detailLevels.Length];
