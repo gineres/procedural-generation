@@ -33,9 +33,13 @@ public class CharacterMovement : MonoBehaviour
 
     private void MoveCharacter(Vector3 direction)
     {
+        // Use the forward direction of the character's transform
+        Vector3 moveDirection = transform.forward * direction.z + transform.right * direction.x;
+
         // Move the character based on the direction
-        transform.Translate(direction * speed * Time.deltaTime, Space.Self);
+        transform.Translate(moveDirection * speed * Time.deltaTime, Space.World);
     }
+
 
     private void RotateTowardsNormal()
     {

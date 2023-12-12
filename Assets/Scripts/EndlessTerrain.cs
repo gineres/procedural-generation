@@ -108,8 +108,8 @@ public class EndlessTerrain : MonoBehaviour
             meshRenderer = meshObject.AddComponent<MeshRenderer>();
             meshFilter = meshObject.AddComponent<MeshFilter>();
             meshCollider = meshObject.AddComponent<MeshCollider>();
-            meshObject.layer = 6;
-            meshObject.tag = "Ground";
+            //meshObject.layer = 6;
+            //meshObject.tag = "Ground";
             meshRenderer.material = material;
 
             meshObject.transform.position = positionV3 * scale;
@@ -200,7 +200,8 @@ public class EndlessTerrain : MonoBehaviour
 
                                         if (!positionOccupied)
                                         {
-                                            Instantiate(portalPrefab, spawnPosition, Quaternion.identity, meshObject.transform);
+                                            GameObject portalGameObject = Instantiate(portalPrefab, spawnPosition, Quaternion.identity, meshObject.transform);
+                                            portalGameObject.tag = "Portal";
                                             occupiedPositions.Add(spawnPosition);
                                         }
                                     }

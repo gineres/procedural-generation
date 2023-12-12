@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class CaveMeshGenerator : MonoBehaviour
 {
+    public MeshFilter cave;
     public SquareGrid squareGrid;
     public MeshFilter walls;
     List <Vector3> vertices;
@@ -32,7 +33,7 @@ public class CaveMeshGenerator : MonoBehaviour
         }
 
         Mesh mesh = new Mesh();
-        GetComponent<MeshFilter>().mesh = mesh;
+        cave.mesh = mesh;
 
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
@@ -72,6 +73,15 @@ public class CaveMeshGenerator : MonoBehaviour
         wallMesh.vertices = wallVertices.ToArray();
         wallMesh.triangles = wallTriangles.ToArray();
         walls.mesh = wallMesh;
+        
+        // Adicionando colisao nas paredes
+        MeshCollider colliderToRemove = GetComponent<MeshCollider>();
+        if (colliderToRemove != null)
+        {
+            Destroy(colliderToRemove);
+        }
+        MeshCollider wallCollider = walls.gameObject.AddComponent<MeshCollider>();
+        wallCollider.sharedMesh = wallMesh;
     }
 
     void TriangulateSquare(Square square) {

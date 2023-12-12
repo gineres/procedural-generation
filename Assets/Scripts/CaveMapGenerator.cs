@@ -16,7 +16,7 @@ public class CaveMapGenerator : MonoBehaviour
 
     int[,] map;
 
-    void Start()
+    /*void Start()
     {
         GenerateMap();
     }
@@ -27,9 +27,9 @@ public class CaveMapGenerator : MonoBehaviour
         {
             GenerateMap();
         }
-    }
+    }*/
 
-    void GenerateMap(){
+    public void GenerateMap(){
         map = new int[width, height];
         RandomFillMap();
 
@@ -56,10 +56,8 @@ public class CaveMapGenerator : MonoBehaviour
                 }
             }
         }
-
         CaveMeshGenerator meshGenerator = GetComponent<CaveMeshGenerator>();
         meshGenerator.GenerateMesh(borderedMap, 1);
-
     }
 
     void ProcessMap(){
