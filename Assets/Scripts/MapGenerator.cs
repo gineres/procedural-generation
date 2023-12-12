@@ -105,6 +105,23 @@ public class MapGenerator : MonoBehaviour
     MapData GenerateMapData(Vector2 center){
         float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize,mapChunkSize,seed,noiseScale, octaves, persistence, lacunarity, center + offset, normalizeMode);
 
+        float[,] itemsMap = Noise.GenerateNoiseMap(mapChunkSize,mapChunkSize,seed*2,noiseScale, octaves, persistence, lacunarity, center + offset, normalizeMode);
+
+        /*
+        for (int i = 0; i < mapChunkSize; i++)
+        {
+            // Iterate through each column in the current row
+            for (int j = 0; j < mapChunkSize; j++)
+            {
+                // Print the current element
+                if (noiseMap[i,j] > 0.53f)
+                {
+                    Debug.Log("CAVERNA!");
+                }
+                //Debug.Log("NoiseMap at [" + i + "," + j + "]: " + noiseMap[i, j]);
+            }
+        }*/
+
         Color[] colorMap = new Color[mapChunkSize*mapChunkSize];
         for (int y = 0; y < mapChunkSize; y++)
         {
@@ -126,7 +143,7 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        return new MapData(noiseMap, colorMap);
+        return new MapData(noiseMap, itemsMap, colorMap);
     }
 
     void OnValidate() // chamado quando muda uma variave l no inspetor
@@ -162,10 +179,12 @@ public struct TerrainType {
 
 public struct MapData {
     public readonly float[,] heightMap;
+    public readonly float[,] itemsMap;
     public readonly Color[] colorMap;
 
-    public MapData (float[,] heightMap, Color[] colorMap){
+    public MapData (float[,] heightMap, float[,] itemsMap, Color[] colorMap){
         this.colorMap = colorMap;
+        this.itemsMap = itemsMap;
         this.heightMap = heightMap;
     }
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class EndlessTerrain : MonoBehaviour
 {
+    public GameObject portalPrefab;
     const float scale = .5f;
     const float viewerMoveThresholdForChunkUpdate = 25f;
     const float squareViewerMoveThresholdForChunkUpdate = viewerMoveThresholdForChunkUpdate*viewerMoveThresholdForChunkUpdate;
@@ -74,13 +75,14 @@ public class EndlessTerrain : MonoBehaviour
                     }*/
                 } else
                 {
-                    terrainChunkDictionary.Add(viewedChunkCoord, new TerrainChunk(viewedChunkCoord, chunkSize, detailLevels, transform, mapMaterial));
+                    terrainChunkDictionary.Add(viewedChunkCoord, new TerrainChunk(viewedChunkCoord, chunkSize, detailLevels, transform, mapMaterial, portalPrefab));
                 }
             }
         }
     }
 
     public class TerrainChunk {
+        GameObject portalPrefab;
         GameObject meshObject;
         Vector2 position;
         Bounds bounds;
@@ -95,9 +97,10 @@ public class EndlessTerrain : MonoBehaviour
         bool mapDataReceived;
         int previousLODIndex = -1;
 
-        public TerrainChunk(Vector2 coord, int size, LODInfo[] detailLevels, Transform parent, Material material){
+        public TerrainChunk(Vector2 coord, int size, LODInfo[] detailLevels, Transform parent, Material material, GameObject portal){
             this.detailLevels = detailLevels;
             position = coord*size;
+            portalPrefab = portal;
             bounds = new Bounds(position, Vector2.one * size);
             Vector3 positionV3 = new Vector3(position.x, 0, position.y); // Posicao para o plano
 
@@ -169,12 +172,46 @@ public class EndlessTerrain : MonoBehaviour
                             previousLODIndex = lodIndex;
                             meshFilter.mesh = lodMesh.mesh;
                             meshCollider.sharedMesh = lodMesh.mesh;
+                            HashSet<Vector3> occupiedPositions = new HashSet<Vector3>();
+                            float minDistanceBetweenObjects = 20.0f;
+
+                            for (int x = 0; x < mapData.heightMap.GetLength(0); x++)
+                            {
+                                for (int y = 0; y < mapData.heightMap.GetLength(1); y++)
+                                {
+                                    if (mapData.heightMap[x,y] < 0.01f)
+                                    {
+                                        float offsetX = (x - mapData.heightMap.GetLength(0) / 2f) * scale;
+                                        float offsetY = (y - mapData.heightMap.GetLength(1) / 2f) * scale;
+                                        
+                                        Vector3 spawnPosition = new Vector3(offsetX, 0, offsetY) + meshObject.transform.position;
+
+                                        // Checa ao redor pra evitar acumulo de spawns
+                                        bool positionOccupied = false;
+
+                                        foreach (Vector3 pos in occupiedPositions)
+                                        {
+                                            if (Vector3.Distance(pos, spawnPosition) < minDistanceBetweenObjects)
+                                            {
+                                                positionOccupied = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (!positionOccupied)
+                                        {
+                                            Instantiate(portalPrefab, spawnPosition, Quaternion.identity, meshObject.transform);
+                                            occupiedPositions.Add(spawnPosition);
+                                        }
+                                    }
+                                }
+                            }
+
                         } else if (!lodMesh.hasRequestedMesh)
                         {
                             lodMesh.RequestMesh(mapData);
                         }
                     }
-
                     terrainChunkVisibleLastUpdate.Add(this);
                 }
 
@@ -207,6 +244,7 @@ public class EndlessTerrain : MonoBehaviour
             mesh = meshData.CreateMesh();
             hasMesh = true;
 
+        
             updateCallback(); // Vai chamar a funcao UpdateTerrainChunk assim que conseguir o mesh data!!!
         }
 
