@@ -5,6 +5,8 @@ using System;
 
 public class CaveMapGenerator : MonoBehaviour
 {
+    public GameObject cameraPosition;
+    public GameObject portal;
     public int width;
     public int height;
 
@@ -16,10 +18,14 @@ public class CaveMapGenerator : MonoBehaviour
 
     int[,] map;
 
-    /*void Start()
+    public GameObject itemToSpawn;
+    GameSystem gameSystem;
+
+    void Start()
     {
-        GenerateMap();
-    }
+        //GenerateMap();
+        gameSystem = FindObjectOfType<GameSystem>();
+    }/*
 
     void Update()
     {
@@ -56,6 +62,69 @@ public class CaveMapGenerator : MonoBehaviour
                 }
             }
         }
+
+        // Limpa objetos spawnados anteriormente
+        foreach (var item in gameSystem.GetItemsOnScreen())
+        {
+            if (gameSystem.GetItemsOnScreen()[item.Key] != null)
+            {
+                Debug.Log(gameSystem.GetItemsOnScreen()[item.Key]);
+                Destroy(gameSystem.GetItemsOnScreen()[item.Key]);
+            }
+            //Debug.Log("Position: " + item.Key + ", Object: " + item.Value);
+        }
+        gameSystem.ClearObjects();
+
+        GameObject[] exitPortals = GameObject.FindGameObjectsWithTag("Exit");
+
+        if (exitPortals.Length > 0)
+        {
+            Destroy(exitPortals[0]);
+        }
+        
+        // Spawna objetos
+        System.Random random = new System.Random(seed.GetHashCode());
+
+        for (int i = 0; i < 2; i++)
+        {
+            int x = random.Next(0, width);
+            int y = random.Next(0, height);
+
+            if (map[x,y] != 1 && GetSurroundingWallCount(x,y,2) == 0) //&& posicao nao ocupada
+            {
+                if (i == 0)
+                {
+                    cameraPosition.transform.position = new Vector3(-width / 2 + .5f + x, -190, -height / 2 + .5f + y);
+                } else
+                {
+                    GameObject exitPortal = Instantiate(portal, new Vector3(-width / 2 + .5f + x, -210, -height / 2 + .5f + y), Quaternion.identity);
+                    exitPortal.tag = "Exit";
+                }
+            }
+            else
+            {
+                i--;
+            }
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            int x = random.Next(0, width);
+            int y = random.Next(0, height);
+
+            Vector3 position = new Vector3(-width / 2 + .5f + x, -204, -height / 2 + .5f + y);
+
+            if (map[x,y] != 1 && !gameSystem.GetInventory().ContainsKey(position)) //&& posicao nao ocupada
+            {
+                GameObject spawnedObject = Instantiate(itemToSpawn, position, Quaternion.Euler(-90, 0, 0));
+                gameSystem.AddItem(position, spawnedObject, false);
+            }
+            else
+            {
+                i--;
+            }
+        }
+
         CaveMeshGenerator meshGenerator = GetComponent<CaveMeshGenerator>();
         meshGenerator.GenerateMesh(borderedMap, 1);
     }
@@ -84,7 +153,7 @@ public class CaveMapGenerator : MonoBehaviour
         {
             if (roomRegion.Count < roomThresholdSize) // "Se a quantidade de tiles parede agrupadas for menor do que o threshold"
             {
-                // Pinta todas as paredes como buracos
+                // Pinta todos os buracos como parede
                 foreach (Coord tile in roomRegion)
                 {
                     map[tile.tileX,tile.tileY] = 1;
@@ -314,11 +383,11 @@ public class CaveMapGenerator : MonoBehaviour
         }
     }
 
-    int GetSurroundingWallCount(int gridX, int gridY){
+    int GetSurroundingWallCount(int gridX, int gridY, int amountAround = 1){
         int wallCount = 0;
-        for (int neighbourX = gridX - 1; neighbourX <= gridX + 1; neighbourX++)
+        for (int neighbourX = gridX - amountAround; neighbourX <= gridX + amountAround; neighbourX++)
         {
-            for (int neighbourY = gridY - 1; neighbourY <= gridY + 1; neighbourY++)
+            for (int neighbourY = gridY - amountAround; neighbourY <= gridY + amountAround; neighbourY++)
             {
                 if (IsInMapRange(neighbourX, neighbourY))
                 {

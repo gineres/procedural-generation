@@ -105,8 +105,6 @@ public class MapGenerator : MonoBehaviour
     MapData GenerateMapData(Vector2 center){
         float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize,mapChunkSize,seed,noiseScale, octaves, persistence, lacunarity, center + offset, normalizeMode);
 
-        float[,] itemsMap = Noise.GenerateNoiseMap(mapChunkSize,mapChunkSize,seed*2,noiseScale, octaves, persistence, lacunarity, center + offset, normalizeMode);
-
         /*
         for (int i = 0; i < mapChunkSize; i++)
         {
@@ -143,7 +141,7 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        return new MapData(noiseMap, itemsMap, colorMap);
+        return new MapData(noiseMap, colorMap);
     }
 
     void OnValidate() // chamado quando muda uma variave l no inspetor
@@ -179,12 +177,10 @@ public struct TerrainType {
 
 public struct MapData {
     public readonly float[,] heightMap;
-    public readonly float[,] itemsMap;
     public readonly Color[] colorMap;
 
-    public MapData (float[,] heightMap, float[,] itemsMap, Color[] colorMap){
+    public MapData (float[,] heightMap, Color[] colorMap){
         this.colorMap = colorMap;
-        this.itemsMap = itemsMap;
         this.heightMap = heightMap;
     }
 }

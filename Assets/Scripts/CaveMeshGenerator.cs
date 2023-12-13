@@ -75,7 +75,7 @@ public class CaveMeshGenerator : MonoBehaviour
         walls.mesh = wallMesh;
         
         // Adicionando colisao nas paredes
-        MeshCollider colliderToRemove = GetComponent<MeshCollider>();
+        MeshCollider colliderToRemove = walls.gameObject.GetComponent<MeshCollider>();
         if (colliderToRemove != null)
         {
             Destroy(colliderToRemove);

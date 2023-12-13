@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameSystem : MonoBehaviour
 {
+    public GameObject entrancePortal;
+
     public CaveMapGenerator caveMapGenerator;
     public Transform playerTransform;
     public float searchRadius = 5f;
@@ -11,6 +13,52 @@ public class GameSystem : MonoBehaviour
     bool breakLoop;
     string mapSeed = Vector3.zero.ToString();
 
+    private Dictionary<Vector3, GameObject> itemsOnScreen = new Dictionary<Vector3, GameObject>();
+    private Dictionary<Vector3, GameObject> inventory = new Dictionary<Vector3, GameObject>();
+
+    public Dictionary<Vector3, GameObject> GetItemsOnScreen() {
+        return itemsOnScreen;
+    }
+    public Dictionary<Vector3, GameObject> GetInventory() {
+        return inventory;
+    }
+
+    public void AddItem(Vector3 position, GameObject gameObject, bool isInventory)
+    {
+        if (isInventory)
+        {
+            if (!inventory.ContainsKey(position))
+            {
+                inventory.Add(position, gameObject);
+            }
+            return;
+        }
+        if (!itemsOnScreen.ContainsKey(position))
+        {
+            itemsOnScreen.Add(position, gameObject);
+        }
+    }
+
+    public void RemoveItem(Vector3 position, bool isInventory)
+    {
+        if (isInventory)
+        {
+            if (inventory.ContainsKey(position))
+            {
+                inventory.Remove(position);
+            }
+        }
+        if (itemsOnScreen.ContainsKey(position))
+        {
+            itemsOnScreen.Remove(position);
+        }
+    }
+
+    public void ClearObjects()
+    {
+        itemsOnScreen.Clear();
+    }
+    
     void Update()
     {
         CheckForPortalsInVisibleRadius();

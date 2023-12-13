@@ -1,72 +1,51 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CharacterMovement : MonoBehaviour
 {
-    public float speed = 5f;
-    public float rotationSpeed = 10f;
-    public float jumpForce = 8f; // Adjust as needed
-    private bool isJumping = false;
+    public float walkSpeed = 5f;
+    public float jumpForce = 10f;
+    public bool invertHorizontal = false;
+    public bool invertVertical = false;
+
+    private CharacterController characterController;
+    private Vector3 playerVelocity;
+    private bool groundedPlayer;
+    private float playerHeight;
+
+    private void Start()
+    {
+        characterController = GetComponent<CharacterController>();
+        playerHeight = characterController.height;
+    }
 
     private void Update()
     {
-        // Get user input
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
+        GroundCheck();
 
-        // Calculate movement direction
-        Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
+        float horizontalInput = invertHorizontal ? -Input.GetAxis("Horizontal") : Input.GetAxis("Horizontal");
+        float verticalInput = invertVertical ? -Input.GetAxis("Vertical") : Input.GetAxis("Vertical");
+        Vector3 playerInput = new Vector3(horizontalInput, 0, verticalInput);
+        playerInput = Vector3.ClampMagnitude(playerInput, 1f);
 
-        // Rotate towards the terrain normal
-        RotateTowardsNormal();
+        Vector3 moveDirection = playerInput.x * transform.right + playerInput.z * transform.forward;
+        characterController.Move(moveDirection * walkSpeed * Time.deltaTime);
 
-        // Move the character
-        MoveCharacter(direction);
-
-        // Handle jumping
-        if (Input.GetButtonDown("Jump") && !isJumping)
+        if (Input.GetButtonDown("Jump") && groundedPlayer)
         {
-            Jump();
+            playerVelocity.y += Mathf.Sqrt(jumpForce * -2f * Physics.gravity.y);
         }
+
+        playerVelocity.y += Physics.gravity.y * Time.deltaTime;
+        characterController.Move(playerVelocity * Time.deltaTime);
     }
 
-    private void MoveCharacter(Vector3 direction)
+    private void GroundCheck()
     {
-        // Use the forward direction of the character's transform
-        Vector3 moveDirection = transform.forward * direction.z + transform.right * direction.x;
+        groundedPlayer = characterController.isGrounded;
 
-        // Move the character based on the direction
-        transform.Translate(moveDirection * speed * Time.deltaTime, Space.World);
-    }
-
-
-    private void RotateTowardsNormal()
-    {
-        // Raycast to determine the ground normal
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.5f))
+        if (groundedPlayer && playerVelocity.y < 0)
         {
-            // Rotate towards the terrain normal
-            Vector3 slopeNormal = hit.normal;
-            Quaternion toRotation = Quaternion.FromToRotation(transform.up, slopeNormal) * transform.rotation;
-            transform.rotation = Quaternion.Slerp(transform.rotation, toRotation, rotationSpeed * Time.deltaTime);
-        }
-    }
-
-    private void Jump()
-    {
-        // Apply an upward force for jumping
-        GetComponent<Rigidbody>().velocity = new Vector3(0, jumpForce, 0);
-        isJumping = true;
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        // Reset isJumping when colliding with the ground
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isJumping = false;
+            playerVelocity.y = 0f;
         }
     }
 }

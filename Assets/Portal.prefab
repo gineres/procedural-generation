@@ -327,7 +327,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6eb44c5356333543a0838b8b841400e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraPosition: {fileID: 4548209786981144996, guid: 85463439845adbe49beef9e67b00550d, type: 3}
 --- !u!65 &3284507335638688255
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -339,8 +338,8 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.28116405, y: 7.0472584, z: 5.177189}
-  m_Center: {x: -0.062915355, y: 6.621934, z: -0.08859444}
+  m_Size: {x: 1.2813516, y: 7.0472584, z: 5.177189}
+  m_Center: {x: -0.1229966, y: 6.621934, z: -0.08859444}
 --- !u!1 &6930774830777876911
 GameObject:
   m_ObjectHideFlags: 0
